@@ -3,6 +3,7 @@ import { HomePage } from '../pages/HomePage';
 import { ProductPage } from '../pages/ProductPage';
 import { CartPage } from '../pages/CartPage';
 import { NavBar } from '../pages/component/Navbar';
+import { checkoutData } from '../test-data/checkoutData';
 
 test('Should be able to checkout as guest', async ({ page }) => {
     const homePage = new HomePage(page);
@@ -22,19 +23,18 @@ test('Should be able to checkout as guest', async ({ page }) => {
     };
 
     await homePage.openHomePage();
-    await homePage.chooseCategory('Laptops');
-    await homePage.chooseProduct(product);
-    await productPage.checkProductPage(product);
-   // await page.pause();
+    await homePage.chooseCategory(checkoutData.category);
+    await homePage.chooseProduct(checkoutData.product);
+    await productPage.checkProductPage(checkoutData.product);
     await productPage.addToCart();
     await navBar.navigateToCart();
-    await cartPage.checkCartItem(product);
+    await cartPage.checkCartItem(checkoutData.product);
     await cartPage.placeOrder(
-        customer.name,
-        customer.country,
-        customer.city,
-        customer.card,
-        customer.month,
-        customer.year
+        checkoutData.customer.name,
+        checkoutData.customer.country,
+        checkoutData.customer.city,
+        checkoutData.customer.card,
+        checkoutData.customer.month,
+        checkoutData.customer.year
     );
 });
