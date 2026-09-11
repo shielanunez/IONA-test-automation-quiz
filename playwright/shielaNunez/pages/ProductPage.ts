@@ -16,7 +16,7 @@ export class ProductPage {
         await this.page.getByRole('link', { name: 'Add to cart' }).click();
         const dialog = await dialogPromise;
         expect(dialog.type()).toBe('alert');
-        expect(dialog.message()).toBe('Product added');
+        expect(dialog.message()).toBe('Product added.');
         await dialog.accept();
     }
 }   
