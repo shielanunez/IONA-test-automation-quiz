@@ -40,6 +40,7 @@ export class CartPage {
         month: string,
         year: string
     ) {
+        await this.placeOrderBtn.click();
         await expect(this.page.getByRole('heading', { name: 'Place order' }))
             .toBeVisible();
         await this.nameInput.fill(name);
@@ -67,4 +68,5 @@ export class CartPage {
         await expect(confirmation).toContainText('Date:');
         await this.page.getByRole('button', { name: 'OK' }).click();
     }
+
 }
