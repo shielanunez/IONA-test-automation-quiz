@@ -29,7 +29,10 @@ export class CartPage {
     }
 
     async checkCartItem(product: string) {
-        expect(this.page.locator('#tbodyid')).toContainText(product);
+        const productRow = this.page.locator('#tbodyid tr')
+            .filter({ hasText: product });
+        await productRow.waitFor({ state: 'visible' });
+        await expect(productRow).toContainText(product);
     }
 
     async placeOrder(
