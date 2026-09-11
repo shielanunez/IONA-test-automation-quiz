@@ -41,7 +41,7 @@ export class CartPage {
         year: string
     ) {
         await this.placeOrderBtn.click();
-        await expect(this.page.getByRole('heading', { name: 'Place order' }))
+        await expect(this.page.locator('[data-target="#orderModal"]'))
             .toBeVisible();
         await this.nameInput.fill(name);
         await this.countryInput.fill(country);
