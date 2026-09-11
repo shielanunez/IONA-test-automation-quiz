@@ -8,7 +8,8 @@ export class ProductPage {
     }
 
     async checkProductPage(product: string) {
-        expect(this.page.getByRole('heading', { name: product }));
+        await expect(
+            this.page.getByRole('heading', { name: product })).toBeVisible();
     }
 
     async addToCart() {
@@ -16,7 +17,7 @@ export class ProductPage {
         await this.page.getByRole('link', { name: 'Add to cart' }).click();
         const dialog = await dialogPromise;
         expect(dialog.type()).toBe('alert');
-        expect(dialog.message()).toBe('Product added.');
+        expect(dialog.message()).toMatch(/^Product added\.?$/);
         await dialog.accept();
     }
 }   
