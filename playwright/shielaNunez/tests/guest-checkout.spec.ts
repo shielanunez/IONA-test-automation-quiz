@@ -25,6 +25,7 @@ test('Should be able to checkout as guest', async ({ page }) => {
     await homePage.chooseCategory('Laptops');
     await homePage.chooseProduct(product);
     await productPage.checkProductPage(product);
+   // await page.pause();
     await productPage.addToCart();
     await navBar.navigateToCart();
     await cartPage.checkCartItem(product);
