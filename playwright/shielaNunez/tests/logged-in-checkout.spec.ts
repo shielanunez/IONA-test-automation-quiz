@@ -7,7 +7,7 @@ import { LoginModal } from '../pages/component/LoginModal';
 import { loginData } from '../test-data/loginData';
 import { checkoutData } from '../test-data/checkoutData';
 
-test('Should be able to checkout as guest', async ({ page }) => {
+test('Should be able to checkout as a logged in user', async ({ page }) => {
     const homePage = new HomePage(page);
     const productPage = new ProductPage(page);
     const cartPage = new CartPage(page);
@@ -16,6 +16,7 @@ test('Should be able to checkout as guest', async ({ page }) => {
 
     await homePage.openHomePage();
     await loginModal.login(loginData.validUser.username, loginData.validUser.password);
+    await navBar.verifyNameOfUser(loginData.validUser.username);
 
     await homePage.chooseCategory(checkoutData.category);
     await homePage.chooseProduct(checkoutData.product);

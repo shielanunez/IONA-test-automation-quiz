@@ -3,4 +3,8 @@ export const loginData = {
         username: 'test',
         password: 'test',
     },
+    invalidUser: {
+        username: 'invalidUser',
+        password: 'invalidPassword',
+    },
 };
