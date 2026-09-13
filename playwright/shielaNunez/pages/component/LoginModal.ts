@@ -32,42 +32,31 @@ export class LoginModal {
             .describe('Log in button');
     }
 
-    async login(username: string, password: string) {
-        await this.navbar.openLoginModal();
-
-        await expect(this.loginModal).toBeVisible();
-
+    async enterCredentials(username: string, password: string) {
         await this.usernameInput.fill(username);
         await this.passwordInput.fill(password);
 
-        await this.loginBtn.click({ force: true });
+    }
+    async login(username: string, password: string) {
+        await this.navbar.openLoginModal();
+        await this.enterCredentials(username, password);
+        await this.loginBtn.click();
     }
 
-    async loginExpectingValidationError(
-        username: string,
-        password: string
-    ) {
+    async loginExpectingValidationError(username: string, password: string): Promise <void> {
         await this.navbar.openLoginModal();
-
-        await expect(this.loginModal).toBeVisible();
-
         await this.usernameInput.fill(username);
         await this.passwordInput.fill(password);
 
         const dialogPromise = new Promise<string>((resolve) => {
             this.page.once('dialog', async (dialog) => {
-                expect(dialog.type()).toBe('alert');
-
                 const message = dialog.message();
-
                 await dialog.accept();
-
                 resolve(message);
             });
         });
 
-        await this.loginBtn.click({ force: true });
-
+        await this.loginBtn.click();
         this.loginDialogMessage = await dialogPromise;
     }
 

@@ -8,7 +8,7 @@ test('Should be able to validate when entered invalid login credentials', async 
     const loginModal = new LoginModal(page);
 
     await homePage.openHomePage();
-    await loginModal.login(loginData.invalidUser.username, loginData.invalidUser.password);
+    await loginModal.loginExpectingValidationError(loginData.invalidUser.username, loginData.invalidUser.password);
     await loginModal.verifyInvalidLoginMsg('Wrong password.');
 });
 
