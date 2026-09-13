@@ -1,30 +1,19 @@
-import { test, expect } from '@playwright/test';
-import { HomePage } from '../pages/HomePage';
-import { ProductPage } from '../pages/ProductPage';
-import { CartPage } from '../pages/CartPage';
-import { NavBar } from '../pages/component/Navbar';
-import { LoginModal } from '../pages/component/LoginModal';
+import { test } from '../fixtures/pageFixtures';
 import { loginData } from '../test-data/loginData';
 import { checkoutData } from '../test-data/checkoutData';
 
-test('Should be able to checkout as a logged in user', async ({ page }) => {
-    const homePage = new HomePage(page);
-    const productPage = new ProductPage(page);
-    const cartPage = new CartPage(page);
-    const navBar = new NavBar(page);
-    const loginModal = new LoginModal(page);
+test('Should be able to checkout as a logged in user', async ({ pages }) => {
+    await pages.homePage.openHomePage();
+    await pages.loginModal.login(loginData.validUser.username, loginData.validUser.password);
+    await pages.navBar.verifyNameOfUser(loginData.validUser.username);
 
-    await homePage.openHomePage();
-    await loginModal.login(loginData.validUser.username, loginData.validUser.password);
-    await navBar.verifyNameOfUser(loginData.validUser.username);
-
-    await homePage.chooseCategory(checkoutData.category);
-    await homePage.chooseProduct(checkoutData.product);
-    await productPage.checkProductPage(checkoutData.product);
-    await productPage.addToCart();
-    await navBar.navigateToCart();
-    await cartPage.checkCartItem(checkoutData.product);
-    await cartPage.placeOrder(
+    await pages.homePage.chooseCategory(checkoutData.category);
+    await pages.homePage.chooseProduct(checkoutData.product);
+    await pages.productPage.checkProductPage(checkoutData.product);
+    await pages.productPage.addToCart();
+    await pages.navBar.navigateToCart();
+    await pages.cartPage.checkCartItem(checkoutData.product);
+    await pages.cartPage.placeOrder(
         checkoutData.customer.name,
         checkoutData.customer.country,
         checkoutData.customer.city,
