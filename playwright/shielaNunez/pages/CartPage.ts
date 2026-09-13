@@ -1,8 +1,10 @@
-import { Page, Locator, expect } from '@playwright/test'
+import { expect, Locator, Page } from '@playwright/test';
+import { handleDialog } from '../utils/dialog';
 
 export class CartPage {
     private readonly page: Page;
     private readonly placeOrderBtn: Locator;
+    private readonly orderModal: Locator;
     private readonly nameInput: Locator;
     private readonly countryInput: Locator;
     private readonly cityInput: Locator;
@@ -13,25 +15,38 @@ export class CartPage {
 
     constructor(page: Page) {
         this.page = page;
-        this.placeOrderBtn = this.page.getByRole('button', { name: 'Place Order' })
-            .describe('Place Order button')
-        this.nameInput = page.locator('#name');
-        this.countryInput = page.locator('#country');
-        this.cityInput = page.locator('#city');
-        this.cardInput = page.locator('#card');
-        this.monthInput = page.locator('#month');
-        this.yearInput = page.locator('#year');
-        this.purchaseBtn = page.getByRole('button', { name: 'Purchase' });
+
+        this.placeOrderBtn = page
+            .getByRole('button', { name: 'Place Order' })
+            .describe('Place Order button');
+
+        this.orderModal = page
+            .locator('#orderModal')
+            .describe('Place Order modal');
+
+        this.nameInput = this.orderModal.locator('#name');
+        this.countryInput = this.orderModal.locator('#country');
+        this.cityInput = this.orderModal.locator('#city');
+        this.cardInput = this.orderModal.locator('#card');
+        this.monthInput = this.orderModal.locator('#month');
+        this.yearInput = this.orderModal.locator('#year');
+
+        this.purchaseBtn = this.orderModal
+            .getByRole('button', { name: 'Purchase' })
+            .describe('Purchase button');
     }
 
     async checkCartPage() {
-        expect(this.page).toHaveURL(/\/cart\.html$/);
+        await expect(this.page).toHaveURL(/\/cart\.html$/);
     }
 
     async checkCartItem(product: string) {
-        const productRow = this.page.locator('#tbodyid tr')
-            .filter({ hasText: product });
-        await productRow.waitFor({ state: 'visible' });
+        const productRow = this.page
+            .locator('#tbodyid tr')
+            .filter({ hasText: product })
+            .first();
+
+        await expect(productRow).toBeVisible();
         await expect(productRow).toContainText(product);
     }
 
@@ -42,19 +57,20 @@ export class CartPage {
         card: string,
         month: string,
         year: string
-    ) {
-        await this.placeOrderBtn.click();
-        await expect(this.page.locator('[data-target="#orderModal"]'))
-            .toBeVisible();
+    ): Promise<string | undefined> {
+        await this.openOrderModal();
+
         await this.nameInput.fill(name);
         await this.countryInput.fill(country);
         await this.cityInput.fill(city);
         await this.cardInput.fill(card);
         await this.monthInput.fill(month);
         await this.yearInput.fill(year);
-        await this.purchaseBtn.click();
 
-
+        return await handleDialog(
+            this.page,
+            () => this.purchaseBtn.click({ force: true })
+        );
     }
 
     async verifyAndCloseOrderConfirmation(
@@ -69,7 +85,14 @@ export class CartPage {
         await expect(confirmation).toContainText(`Name: ${name}`);
         await expect(confirmation).toContainText('Id:');
         await expect(confirmation).toContainText('Date:');
-        await this.page.getByRole('button', { name: 'OK' }).click();
+
+        await confirmation
+            .getByRole('button', { name: 'OK' })
+            .click();
     }
 
+    private async openOrderModal() {
+        await this.placeOrderBtn.click();
+        await expect(this.orderModal).toBeVisible();
+    }
 }
