@@ -40,6 +40,20 @@ export class LoginModal {
         await this.usernameInput.fill(username);
         await this.passwordInput.fill(password);
 
+        await this.loginBtn.click({ force: true });
+    }
+
+    async loginExpectingValidationError(
+        username: string,
+        password: string
+    ) {
+        await this.navbar.openLoginModal();
+
+        await expect(this.loginModal).toBeVisible();
+
+        await this.usernameInput.fill(username);
+        await this.passwordInput.fill(password);
+
         const dialogPromise = new Promise<string>((resolve) => {
             this.page.once('dialog', async (dialog) => {
                 expect(dialog.type()).toBe('alert');
@@ -57,7 +71,7 @@ export class LoginModal {
         this.loginDialogMessage = await dialogPromise;
     }
 
-    async verifyInvalidLoginMsg(expectedMessage: string) {
+    verifyInvalidLoginMsg(expectedMessage: string) {
         expect(this.loginDialogMessage).toBe(expectedMessage);
     }
 }
