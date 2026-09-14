@@ -1,4 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
+import type { CheckoutCustomer } from '../test-data/checkoutData';
 import { handleDialog } from '../utils/dialog';
 
 export class CartPage {
@@ -134,5 +135,31 @@ export class CartPage {
                 .click();
             await expect(cartRows).toHaveCount(currentCount - 1);
         }
+    }
+
+    async verifyPurchaseConfirmation(
+        totalAmount: number,
+        customer: CheckoutCustomer
+    ) {
+        await expect(this.purchaseConfirmation).toContainText(
+            `Amount: ${totalAmount} USD`
+        );
+
+        await expect(this.purchaseConfirmation).toContainText(
+            `Card Number: ${customer.card}`
+        );
+
+        await expect(this.purchaseConfirmation).toContainText(
+            `Name: ${customer.name}`
+        );
+
+        await expect(this.purchaseConfirmation).toContainText('Id:');
+        await expect(this.purchaseConfirmation).toContainText('Date:');
+    }
+    async verifyValidationMessage(
+        actualMessage: string | undefined,
+        expectedMessage: string
+    ) {
+        expect(actualMessage).toBe(expectedMessage);
     }
 }

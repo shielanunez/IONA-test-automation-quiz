@@ -1,4 +1,4 @@
-import { test, expect } from '../fixtures/pageFixtures';
+import { test } from '../fixtures/pageFixtures';
 import {
     checkoutCustomer,
     checkoutDataScenarios
@@ -17,6 +17,7 @@ test.describe('Checkout', () => {
         await pages.cartPage.clearCart();
         await pages.cartPage.verifyCartIsEmpty();
     });
+
     // Verify that a guest user can successfully complete the checkout process.
     test('Should be able to checkout as guest', async ({ pages }) => {
         await test.step('Given the user is on the home page', async () => {
@@ -54,10 +55,10 @@ test.describe('Checkout', () => {
             }
         );
 
-        const confirmationMessage = await test.step(
+        await test.step(
             'When the user places the order',
             async () => {
-                return await pages.cartPage.placeOrder(
+                await pages.cartPage.placeOrder(
                     checkoutCustomer.name,
                     checkoutCustomer.country,
                     checkoutCustomer.city,
@@ -71,20 +72,10 @@ test.describe('Checkout', () => {
         await test.step(
             'Then the purchase confirmation should contain the correct details',
             async () => {
-                expect(confirmationMessage).toContain(
-                    `Amount: ${totalAmount} USD`
+                await pages.cartPage.verifyPurchaseConfirmation(
+                    totalAmount,
+                    checkoutCustomer
                 );
-
-                expect(confirmationMessage).toContain(
-                    `Card Number: ${checkoutCustomer.card}`
-                );
-
-                expect(confirmationMessage).toContain(
-                    `Name: ${checkoutCustomer.name}`
-                );
-
-                expect(confirmationMessage).toContain('Id:');
-                expect(confirmationMessage).toContain('Date:');
             }
         );
     });
@@ -139,10 +130,10 @@ test.describe('Checkout', () => {
             }
         );
 
-        const confirmationMessage = await test.step(
+        await test.step(
             'When the user places the order',
             async () => {
-                return await pages.cartPage.placeOrder(
+                await pages.cartPage.placeOrder(
                     checkoutCustomer.name,
                     checkoutCustomer.country,
                     checkoutCustomer.city,
@@ -156,20 +147,10 @@ test.describe('Checkout', () => {
         await test.step(
             'Then the purchase confirmation should contain the correct details',
             async () => {
-                expect(confirmationMessage).toContain(
-                    `Amount: ${totalAmount} USD`
+                await pages.cartPage.verifyPurchaseConfirmation(
+                    totalAmount,
+                    checkoutCustomer
                 );
-
-                expect(confirmationMessage).toContain(
-                    `Card Number: ${checkoutCustomer.card}`
-                );
-
-                expect(confirmationMessage).toContain(
-                    `Name: ${checkoutCustomer.name}`
-                );
-
-                expect(confirmationMessage).toContain('Id:');
-                expect(confirmationMessage).toContain('Date:');
             }
         );
     });
@@ -221,7 +202,8 @@ test.describe('Checkout', () => {
         await test.step(
             'Then a name and credit card validation should be displayed',
             async () => {
-                expect(dialogMessage).toBe(
+                await pages.cartPage.verifyValidationMessage(
+                    dialogMessage,
                     'Please fill out Name and Creditcard.'
                 );
             }
@@ -275,7 +257,8 @@ test.describe('Checkout', () => {
         await test.step(
             'Then a name and credit card validation should be displayed',
             async () => {
-                expect(dialogMessage).toBe(
+                await pages.cartPage.verifyValidationMessage(
+                    dialogMessage,
                     'Please fill out Name and Creditcard.'
                 );
             }
@@ -364,7 +347,8 @@ test.describe('Checkout', () => {
         await test.step(
             'Then a validation message for the invalid card should be displayed',
             async () => {
-                expect(dialogMessage).toBe(
+                await pages.cartPage.verifyValidationMessage(
+                    dialogMessage,
                     'Please enter a valid credit card number.'
                 );
             }

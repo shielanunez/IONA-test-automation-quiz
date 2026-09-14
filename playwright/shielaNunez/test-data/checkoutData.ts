@@ -1,4 +1,13 @@
-export const checkoutCustomer = {
+export type CheckoutCustomer = {
+    name: string;
+    country: string;
+    city: string;
+    card: string;
+    month: string;
+    year: string;
+};
+
+export const checkoutCustomer: CheckoutCustomer = {
     name: 'John Doe',
     country: 'Philippines',
     city: 'Manila',

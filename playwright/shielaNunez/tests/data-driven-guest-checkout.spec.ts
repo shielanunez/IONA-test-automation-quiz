@@ -1,4 +1,4 @@
-import { test, expect } from '../fixtures/pageFixtures';
+import { test } from '../fixtures/pageFixtures';
 import {
     checkoutCustomer,
     checkoutDataScenarios
@@ -14,7 +14,9 @@ test.describe('Guest Checkout', () => {
         await pages.cartPage.verifyCartIsEmpty();
     });
 
-    // Individual product checkout
+    // Individual Product Checkout
+    // Verify that a guest user can successfully checkout
+    // with each product defined in the test data.
     for (const data of checkoutDataScenarios) {
         test(
             `Should be able to checkout as guest - ${data.product}`,
@@ -71,23 +73,18 @@ test.describe('Guest Checkout', () => {
                 );
 
                 // Calculate the cart total before placing the order
-                // so it can be validated against the confirmation message.
+                // so it can be verified against the purchase confirmation.
                 const totalAmount = await test.step(
-                    'And the total cart amount is calculated',
+                    'And the cart total amount is calculated',
                     async () => {
-                        const total = await pages.cartPage.getTotalAmount();
-
-                        console.log(`Total amount: ${total}`);
-
-                        return total;
+                        return await pages.cartPage.getTotalAmount();
                     }
                 );
 
-                // Place the order using the shared customer data.
-                const confirmationMessage = await test.step(
+                await test.step(
                     'When the user places the order',
                     async () => {
-                        return await pages.cartPage.placeOrder(
+                        await pages.cartPage.placeOrder(
                             checkoutCustomer.name,
                             checkoutCustomer.country,
                             checkoutCustomer.city,
@@ -99,33 +96,25 @@ test.describe('Guest Checkout', () => {
                 );
 
                 await test.step(
-                    'Then the order confirmation should contain the correct details',
+                    'Then the purchase confirmation should contain the correct details',
                     async () => {
-                        expect(confirmationMessage).toContain(
-                            `Amount: ${totalAmount} USD`
+                        await pages.cartPage.verifyPurchaseConfirmation(
+                            totalAmount,
+                            checkoutCustomer
                         );
-
-                        expect(confirmationMessage).toContain(
-                            `Card Number: ${checkoutCustomer.card}`
-                        );
-
-                        expect(confirmationMessage).toContain(
-                            `Name: ${checkoutCustomer.name}`
-                        );
-
-                        expect(confirmationMessage).toContain('Id:');
-                        expect(confirmationMessage).toContain('Date:');
                     }
                 );
             }
         );
     }
 
-    // All products checkout
+
+    // All Products Checkout
+    // Verify that a guest user can add all products to the same cart
+    // and successfully complete a single checkout.
     test(
         'Should be able to checkout with all products',
         async ({ pages }) => {
-
             await test.step(
                 'Given the user is on the home page',
                 async () => {
@@ -168,8 +157,8 @@ test.describe('Guest Checkout', () => {
             await test.step(
                 'Then all products should be displayed in the cart',
                 async () => {
-                    // Extract only the product names from the test data
-                    // and pass them to the Page Object for verification.
+                    // Extract the product names from the test data
+                    // and let the Page Object verify each item.
                     const products = checkoutDataScenarios.map(
                         data => data.product
                     );
@@ -178,23 +167,20 @@ test.describe('Guest Checkout', () => {
                 }
             );
 
-            // Calculate the total of all products in the cart.
+            // Calculate the total of all products in the cart
+            // before placing the order.
             const totalAmount = await test.step(
-                'And the total cart amount is calculated',
+                'And the cart total amount is calculated',
                 async () => {
-                    const total = await pages.cartPage.getTotalAmount();
-
-                    console.log(`Total amount: ${total}`);
-
-                    return total;
+                    return await pages.cartPage.getTotalAmount();
                 }
             );
 
-            // Place ONE order containing all products.
-            const confirmationMessage = await test.step(
+            // Place one order containing all products.
+            await test.step(
                 'When the user places the order',
                 async () => {
-                    return await pages.cartPage.placeOrder(
+                    await pages.cartPage.placeOrder(
                         checkoutCustomer.name,
                         checkoutCustomer.country,
                         checkoutCustomer.city,
@@ -206,22 +192,12 @@ test.describe('Guest Checkout', () => {
             );
 
             await test.step(
-                'Then the order confirmation should contain the correct details',
+                'Then the purchase confirmation should contain the correct details',
                 async () => {
-                    expect(confirmationMessage).toContain(
-                        `Amount: ${totalAmount} USD`
+                    await pages.cartPage.verifyPurchaseConfirmation(
+                        totalAmount,
+                        checkoutCustomer
                     );
-
-                    expect(confirmationMessage).toContain(
-                        `Card Number: ${checkoutCustomer.card}`
-                    );
-
-                    expect(confirmationMessage).toContain(
-                        `Name: ${checkoutCustomer.name}`
-                    );
-
-                    expect(confirmationMessage).toContain('Id:');
-                    expect(confirmationMessage).toContain('Date:');
                 }
             );
         }
