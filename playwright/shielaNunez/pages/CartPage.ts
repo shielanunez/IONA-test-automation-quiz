@@ -108,4 +108,13 @@ export class CartPage {
 
         return totalAmount;
     }
+
+    async verifyCartIsEmpty() {
+        const cartItems = this.page.locator('#tbodyid tr');
+        await expect(cartItems).toHaveCount(0);
+    }
+
+    async verifyPlaceOrderIsNotAvailable() {
+        await expect(this.placeOrderBtn).not.toBeVisible();
+    }
 }
