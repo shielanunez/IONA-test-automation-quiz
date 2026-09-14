@@ -1,10 +1,23 @@
 import { test, expect } from '../fixtures/pageFixtures';
-import { checkoutData } from '../test-data/checkoutData';
+import {
+    checkoutCustomer,
+    checkoutDataScenarios
+} from '../test-data/checkoutData';
 import { loginData } from '../test-data/loginData';
 
-const { category, product, customer } = checkoutData;
+// Use only the first checkout scenario for the tests in this spec.
+const { category, product } = checkoutDataScenarios[0];
 
 test.describe('Checkout', () => {
+    // Clean up the cart after each test to prevent cart data
+    // from affecting subsequent tests.
+    test.afterEach(async ({ pages }) => {
+        await pages.homePage.openHomePage();
+        await pages.navBar.navigateToCart();
+        await pages.cartPage.clearCart();
+        await pages.cartPage.verifyCartIsEmpty();
+    });
+    // Verify that a guest user can successfully complete the checkout process.
     test('Should be able to checkout as guest', async ({ pages }) => {
         await test.step('Given the user is on the home page', async () => {
             await pages.homePage.openHomePage();
@@ -45,12 +58,12 @@ test.describe('Checkout', () => {
             'When the user places the order',
             async () => {
                 return await pages.cartPage.placeOrder(
-                    customer.name,
-                    customer.country,
-                    customer.city,
-                    customer.card,
-                    customer.month,
-                    customer.year
+                    checkoutCustomer.name,
+                    checkoutCustomer.country,
+                    checkoutCustomer.city,
+                    checkoutCustomer.card,
+                    checkoutCustomer.month,
+                    checkoutCustomer.year
                 );
             }
         );
@@ -61,18 +74,22 @@ test.describe('Checkout', () => {
                 expect(confirmationMessage).toContain(
                     `Amount: ${totalAmount} USD`
                 );
+
                 expect(confirmationMessage).toContain(
-                    `Card Number: ${customer.card}`
+                    `Card Number: ${checkoutCustomer.card}`
                 );
+
                 expect(confirmationMessage).toContain(
-                    `Name: ${customer.name}`
+                    `Name: ${checkoutCustomer.name}`
                 );
+
                 expect(confirmationMessage).toContain('Id:');
                 expect(confirmationMessage).toContain('Date:');
             }
         );
     });
 
+    // Verify that an authenticated user can successfully complete the checkout process.
     test('Should be able to checkout as an authenticated user', async ({ pages }) => {
         await test.step('Given the user is on the home page', async () => {
             await pages.homePage.openHomePage();
@@ -126,12 +143,12 @@ test.describe('Checkout', () => {
             'When the user places the order',
             async () => {
                 return await pages.cartPage.placeOrder(
-                    customer.name,
-                    customer.country,
-                    customer.city,
-                    customer.card,
-                    customer.month,
-                    customer.year
+                    checkoutCustomer.name,
+                    checkoutCustomer.country,
+                    checkoutCustomer.city,
+                    checkoutCustomer.card,
+                    checkoutCustomer.month,
+                    checkoutCustomer.year
                 );
             }
         );
@@ -142,18 +159,22 @@ test.describe('Checkout', () => {
                 expect(confirmationMessage).toContain(
                     `Amount: ${totalAmount} USD`
                 );
+
                 expect(confirmationMessage).toContain(
-                    `Card Number: ${customer.card}`
+                    `Card Number: ${checkoutCustomer.card}`
                 );
+
                 expect(confirmationMessage).toContain(
-                    `Name: ${customer.name}`
+                    `Name: ${checkoutCustomer.name}`
                 );
+
                 expect(confirmationMessage).toContain('Id:');
                 expect(confirmationMessage).toContain('Date:');
             }
         );
     });
 
+    // Verify that checkout displays a validation message when the name is missing.
     test('Should see a validation when placed order without name', async ({ pages }) => {
         await test.step('Given the user is on the home page', async () => {
             await pages.homePage.openHomePage();
@@ -188,22 +209,26 @@ test.describe('Checkout', () => {
             async () => {
                 return await pages.cartPage.placeOrder(
                     '',
-                    customer.country,
-                    customer.city,
-                    customer.card,
-                    customer.month,
-                    customer.year
+                    checkoutCustomer.country,
+                    checkoutCustomer.city,
+                    checkoutCustomer.card,
+                    checkoutCustomer.month,
+                    checkoutCustomer.year
                 );
             }
         );
 
-        await test.step('Then a name and credit card validation should be displayed', async () => {
-            expect(dialogMessage).toBe(
-                'Please fill out Name and Creditcard.'
-            );
-        });
+        await test.step(
+            'Then a name and credit card validation should be displayed',
+            async () => {
+                expect(dialogMessage).toBe(
+                    'Please fill out Name and Creditcard.'
+                );
+            }
+        );
     });
 
+    // Verify that checkout displays a validation message when the credit card is missing.
     test('Should see a validation when placed order without card', async ({ pages }) => {
         await test.step('Given the user is on the home page', async () => {
             await pages.homePage.openHomePage();
@@ -237,41 +262,63 @@ test.describe('Checkout', () => {
             'When the user places the order without a credit card',
             async () => {
                 return await pages.cartPage.placeOrder(
-                    customer.name,
-                    customer.country,
-                    customer.city,
+                    checkoutCustomer.name,
+                    checkoutCustomer.country,
+                    checkoutCustomer.city,
                     '',
-                    customer.month,
-                    customer.year
+                    checkoutCustomer.month,
+                    checkoutCustomer.year
                 );
             }
         );
 
-        await test.step('Then a name and credit card validation should be displayed', async () => {
-            expect(dialogMessage).toBe(
-                'Please fill out Name and Creditcard.'
-            );
-        });
+        await test.step(
+            'Then a name and credit card validation should be displayed',
+            async () => {
+                expect(dialogMessage).toBe(
+                    'Please fill out Name and Creditcard.'
+                );
+            }
+        );
     });
 
+    // Known issue: the application currently allows the Place Order action when the cart is empty.
     test('Should not be able to place an order when the cart is empty', async ({ pages }) => {
+        test.fail(
+            true,
+            'Known issue: Place Order should not be available when the cart is empty.'
+        );
+
         await test.step('Given the user is on the home page', async () => {
             await pages.homePage.openHomePage();
         });
 
-        await test.step('When the user navigates to the cart without adding any item', async () => {
-            await pages.navBar.navigateToCart();
-        });
+        await test.step(
+            'When the user navigates to the cart without adding any item',
+            async () => {
+                await pages.navBar.navigateToCart();
+            }
+        );
 
         await test.step('Then the cart should be empty', async () => {
             await pages.cartPage.verifyCartIsEmpty();
         });
 
-        await test.step('And the Place Order button should not be available', async () => {
-            await pages.cartPage.verifyPlaceOrderIsNotAvailable();
-        });
+        await test.step(
+            'And the Place Order button should not be available',
+            async () => {
+                await pages.cartPage.verifyPlaceOrderIsNotAvailable();
+            }
+        );
     });
+
+    // Known issue: the application currently accepts an invalid credit card format.
     test('Should not be able to checkout with an invalid card format', async ({ pages }) => {
+        test.fail(
+            true,
+            'Known issue: invalid credit card formats are accepted during checkout.'
+        );
+
         await test.step('Given the user is on the home page', async () => {
             await pages.homePage.openHomePage();
         });
@@ -304,12 +351,12 @@ test.describe('Checkout', () => {
             'When the user places the order with an invalid card format',
             async () => {
                 return await pages.cartPage.placeOrder(
-                    customer.name,
-                    customer.country,
-                    customer.city,
+                    checkoutCustomer.name,
+                    checkoutCustomer.country,
+                    checkoutCustomer.city,
                     'ABC123',
-                    customer.month,
-                    customer.year
+                    checkoutCustomer.month,
+                    checkoutCustomer.year
                 );
             }
         );

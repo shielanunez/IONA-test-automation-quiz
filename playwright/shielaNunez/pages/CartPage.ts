@@ -54,6 +54,12 @@ export class CartPage {
         await expect(productRow).toContainText(product);
     }
 
+    async checkCartItems(products: string[]) {
+        for (const product of products) {
+            await this.checkCartItem(product);
+        }
+    }
+
     async placeOrder(
         name: string,
         country: string,
@@ -116,5 +122,17 @@ export class CartPage {
 
     async verifyPlaceOrderIsNotAvailable() {
         await expect(this.placeOrderBtn).not.toBeVisible();
+    }
+
+    async clearCart() {
+        const cartRows = this.page.locator('#tbodyid tr');
+        while (await cartRows.count() > 0) {
+            const currentCount = await cartRows.count();
+            await cartRows
+                .first()
+                .getByText('Delete')
+                .click();
+            await expect(cartRows).toHaveCount(currentCount - 1);
+        }
     }
 }
