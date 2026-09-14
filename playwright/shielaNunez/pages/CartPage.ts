@@ -12,6 +12,7 @@ export class CartPage {
     private readonly monthInput: Locator;
     private readonly yearInput: Locator;
     private readonly purchaseBtn: Locator;
+    private readonly purchaseConfirmation: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -34,6 +35,9 @@ export class CartPage {
         this.purchaseBtn = this.orderModal
             .getByRole('button', { name: 'Purchase' })
             .describe('Purchase button');
+        this.purchaseConfirmation = this.page
+            .getByRole('heading', { name: 'Thank you for your purchase!' })
+            .locator('..');
     }
 
     async checkCartPage() {
@@ -67,32 +71,41 @@ export class CartPage {
         await this.monthInput.fill(month);
         await this.yearInput.fill(year);
 
-        return await handleDialog(
+        const dialogMessage = await handleDialog(
             this.page,
-            () => this.purchaseBtn.click({ force: true })
+            () => this.purchaseBtn.click()
         );
+
+        // If there was a validation dialog, return its message.
+        if (dialogMessage) {
+            return dialogMessage;
+        }
+
+        // Otherwise, wait for the successful purchase confirmation.
+        await expect(this.purchaseConfirmation).toBeVisible();
+
+        return (await this.purchaseConfirmation.textContent()) ?? '';
     }
-
-    async verifyAndCloseOrderConfirmation(
-        name: string,
-        card: string,
-        amount: number
-    ) {
-        const confirmation = this.page.getByRole('dialog');
-
-        await expect(confirmation).toContainText(`Amount: ${amount} USD`);
-        await expect(confirmation).toContainText(`Card Number: ${card}`);
-        await expect(confirmation).toContainText(`Name: ${name}`);
-        await expect(confirmation).toContainText('Id:');
-        await expect(confirmation).toContainText('Date:');
-
-        await confirmation
-            .getByRole('button', { name: 'OK' })
-            .click();
-    }
-
     private async openOrderModal() {
         await this.placeOrderBtn.click();
         await expect(this.orderModal).toBeVisible();
+    }
+
+    async getTotalAmount(): Promise<number> {
+        const rows = this.page.locator('#tbodyid tr');
+        let totalAmount = 0;
+        const rowCount = await rows.count();
+        for (let i = 0; i < rowCount; i++) {
+            const priceText = await rows.nth(i).locator('td').nth(2).textContent();
+            const price = parseFloat(priceText?.trim() ?? '0');
+
+            if (Number.isNaN(price)) {
+                throw new Error(`Invalid product price: "${priceText}"`);
+            }
+
+            totalAmount += price;
+        }
+
+        return totalAmount;
     }
 }
